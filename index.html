@@ -93,6 +93,8 @@ footer p{margin:0;max-width:44em}
 .dr{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end}
 .sc{position:absolute;inset:0;background:rgba(3,1,8,.7);backdrop-filter:blur(3px)}
 .pn{position:relative;width:min(460px,100%);height:100%;background:var(--p);border-left:1px solid var(--ln2);display:flex;flex-direction:column;animation:sl .38s ease-out}
+.dr.closing .pn{animation:slout .28s ease-in forwards}
+@keyframes slout{to{transform:translateX(40px);opacity:0}}
 @keyframes sl{from{transform:translateX(40px);opacity:0}}
 .dh{display:flex;justify-content:space-between;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) 20px 14px;border-bottom:1px solid var(--ln)}
 .dh h2{font-size:1.5rem}
@@ -278,12 +280,12 @@ l.push('','*Total dos copos:* '+brl(t),'*Recebimento:* '+(document.querySelector
 var nm=$('#nm').value.trim(),ed=$('#ed').value.trim(),ob=$('#ob').value.trim();if(nm)l.push('*Nome:* '+nm);if(ed&&$('[value=Entrega]').checked)l.push('*Endereço:* '+ed);if(ob)l.push('*Obs.:* '+ob);return l.join('\n')}
 function link(){$('#snd').href='https://wa.me/'+WA+'?text='+encodeURIComponent(msg())}
 function toast(t){var e=$('#tt');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove('on')},1700)}
-function open_(o){$('#tt').classList.remove('on');$('#dr').hidden=!o;document.body.style.overflow=o?'hidden':'';if(o){link();$('#closeCartBtn').focus()}else $('#cartBtn').focus()}
+var closeTimer;function open_(o){$('#tt').classList.remove('on');clearTimeout(closeTimer);var dr=$('#dr');if(o){dr.hidden=false;dr.classList.remove('closing');document.body.style.overflow='hidden';link();$('#closeCartBtn').focus()}else if(!dr.hidden){dr.classList.add('closing');closeTimer=setTimeout(function(){dr.hidden=true;dr.classList.remove('closing');document.body.style.overflow='';$('#cartBtn').focus()},280)}}
 $('#grid').addEventListener('change',function(e){var c=e.target.closest('.card');if(c){sel[c.dataset.id]=+e.target.value;refresh()}});
 $('#grid').addEventListener('click',function(e){var b=e.target.closest('.add');if(!b)return;var id=b.closest('.card').dataset.id,k=id+'|'+sel[id];cart[k]=(cart[k]||0)+1;refresh();toast(find(id).n+' adicionado')});
 $('#chips').addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;flt=b.dataset.k;document.querySelectorAll('.chip').forEach(function(x){x.setAttribute('aria-pressed',x===b)});document.querySelectorAll('.card').forEach(function(c){c.hidden=!!flt&&!find(c.dataset.id).i.some(function(t){return t.toLowerCase().indexOf(flt)>-1})});g.scrollTo({left:0});prog()});
 $('#ln').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var k=b.dataset.k;cart[k]=(cart[k]||0)+(+b.dataset.d);if(cart[k]<=0)delete cart[k];refresh()});
-$('#cartBtn').onclick=$('#barBtn').onclick=function(){open_(true)};$('#closeCartBtn').addEventListener('pointerdown',function(e){if(e.pointerType==='touch'){e.preventDefault();e.stopPropagation();open_(false)}},{passive:false});$('#closeCartBtn').onclick=$('#sc').onclick=function(e){if(e){e.preventDefault();e.stopPropagation()}open_(false)};
+$('#cartBtn').onclick=$('#barBtn').onclick=function(){open_(true)};$('#closeCartBtn').onclick=$('#sc').onclick=function(e){if(e){e.preventDefault();e.stopPropagation()}open_(false)};
 document.addEventListener('keydown',function(e){if($('#dr').hidden)return;if(e.key==='Escape')open_(false);if(e.key==='Tab'){var f=[].slice.call($('#dr').querySelectorAll('button,input,textarea,a[href]')).filter(function(x){return x.offsetParent!==null&&!x.disabled});if(!f.length)return;var a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
 $('#fm').addEventListener('input',function(){$('#ef').hidden=!$('[value=Entrega]').checked;link()});$('#fm').addEventListener('change',function(){$('#ef').hidden=!$('[value=Entrega]').checked;link()});
 $('#snd').addEventListener('click',function(e){var er=$('#er'),m='';if(!$('#nm').value.trim())m='Informe seu nome.';else if($('[value=Entrega]').checked&&!$('#ed').value.trim())m='Informe o endereço de entrega.';
